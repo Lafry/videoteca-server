@@ -1,0 +1,170 @@
+# Progetto Videoteca
+
+## Descrizione
+
+Il progetto Videoteca è un'applicazione client-server realizzata in linguaggio C.  
+- **Server:** si occupa della gestione degli utenti (registrazione, login) e delle operazioni sui film (ricerca, noleggio, restituzione, visualizzazione dei noleggi). I dati vengono persistiti in file JSON ("users.json" per gli utenti e "films.json" per i film) e sono protetti da meccanismi di sincronizzazione per garantire il thread-safe.
+- **Client:** (sviluppato separatamente) interagisce con il server inviando comandi formattati secondo un protocollo definito (campi separati da "|" e terminati da un newline).
+
+Il progetto è suddiviso in due parti (client e server) ed è fornito con i file necessari per compilare ed eseguire entrambe le applicazioni. Inoltre, il sistema è containerizzato con **Docker** e orchestrato tramite **Docker Compose** per facilitarne la distribuzione e l’isolamento.
+
+## Struttura del Progetto
+
+La struttura delle cartelle è la seguente:
+
+progetto-videoteca/
+├── client/             
+│   ├── client.c        # Codice sorgente del client
+│   └── Dockerfile      # Dockerfile per costruire il container del client
+├── data/               
+│   ├── films.json      # File JSON per i film (esempio iniziale fornito)
+│   └── users.json      # File JSON per gli utenti (inizialmente vuoto)
+├── server/             
+│   ├── auth.c          # Modulo per la gestione di registrazione e login
+│   ├── auth.h          # Header del modulo auth
+│   ├── cJSON.c         # Libreria cJSON (può essere sostituita dalla versione di sistema)
+│   ├── cJSON.h         # Header della libreria cJSON
+│   ├── json_db.c       # Modulo per la gestione del database JSON
+│   ├── json_db.h       # Header del modulo JSON
+│   ├── main.c          # Punto d'ingresso del server
+│   ├── rental.c        # Modulo per la gestione delle operazioni sui film
+│   └── rental.h        # Header del modulo rental
+├── docker-compose.yml  # File per orchestrare i container (client e server)
+└── Makefile            # Makefile centrale per compilare server e client
+
+
+## Prerequisiti
+
+Assicurarsi di avere installato sulla macchina:
+- [Docker](https://www.docker.com/get-started) (versione recente)
+- [Docker Compose](https://docs.docker.com/compose/install/)  
+- (Opzionale) GCC per compilare localmente
+
+## Istruzioni per Eseguire il Progetto
+
+### 1. Esecuzione tramite Docker Compose
+
+Questo metodo consente di avviare l'intero sistema (server e client) in container isolati.
+
+#### a) Preparazione
+
+1. **Clonare il repository:**
+
+   git clone <url-del-repository>
+   cd progetto-videoteca
+
+2. **Preparare la cartella dei dati:**
+
+   Verificare che la cartella `data/` esista e contenga i file di persistenza. Se non esistono, crearli eseguendo:
+   
+   mkdir -p data
+   echo "[]" > data/users.json
+   echo "[]" > data/films.json
+
+#### b) Costruzione ed Esecuzione
+
+1. **Costruire ed eseguire i container:**
+
+   Eseguire il seguente comando dalla cartella radice:
+   
+   docker compose up --build
+
+   Questo comando:
+   - Costruisce le immagini per il server e il client utilizzando i rispettivi Dockerfile.
+   - Mappa la porta 8080 del container server sulla porta 8080 della macchina host.
+   - Avvia il container del client in modalità interattiva (con `stdin_open` e `tty` abilitati).
+
+2. **Interazione col Client:**
+
+   Se al lancio la console non appare in modo interattivo (ad esempio, se viene mostrato solo l’output dei log), si può collegare il terminale al container del client con:
+   
+   docker attach video_client
+
+   Oppure aprire una shell interattiva nel container:
+   
+   docker exec -it video_client /bin/bash
+   
+   In questo modo potrai interagire con il client e inviare comandi secondo il menù interattivo.
+
+3. **Terminare l'Esecuzione:**
+
+   Per fermare e rimuovere i container, eseguire:
+   
+   docker compose down
+
+### 2. Esecuzione Locale (senza Docker)
+
+Se preferisci compilare ed eseguire il progetto localmente:
+
+#### a) Compilazione
+
+Dalla cartella radice del progetto, eseguire:
+   
+make all
+
+
+Questo comando compilerà:
+- Il server e genererà l'eseguibile `server/server`
+- Il client e genererà l'eseguibile `client/client`
+
+#### b) Esecuzione
+
+1. **Avviare il server:**
+
+   Apri un terminale e lancia:
+   
+   ./server/server
+
+2. **Avviare il client:**
+
+   In un terminale separato, lancia:
+   
+   ./client/client
+
+3. **Interazione:**
+
+   Il client si connetterà al server sulla porta 8080 e potrai usare il menù interattivo per inviare comandi (registrazione, login, ricerca, noleggio, restituzione, visualizzazione dei noleggi).
+
+## Note sulla Connessione Remota
+
+- Per permettere ad un client remoto di connettersi al server eseguito in container, è necessario che:
+  - La macchina host disponga di un indirizzo IP pubblico o di un nome di dominio risolvibile.
+  - Il port mapping nel file `docker-compose.yml` (ad esempio, `"8080:8080"`) sia configurato correttamente.
+  - I firewall (sia a livello host che a livello di rete) consentano il traffico in ingresso sulla porta 8080.
+- In questo scenario, il client dovrà connettersi utilizzando l'indirizzo IP pubblico (o nome di dominio) della macchina host e la porta 8080.
+
+## Specifiche del Protocollo di Comunicazione
+
+Il server attende comandi testuali formattati con delimitatori specifici e terminati da un newline (`\n`). Ecco un riepilogo:
+
+- **REGISTER:**  
+  - Formato: `REGISTER|username|password\n`  
+  - Esempio: `REGISTER|Mario|password123\n`
+  
+- **LOGIN:**  
+  - Formato: `LOGIN|username|password\n`  
+  - Esempio: `LOGIN|Mario|password123\n`
+  
+- **SEARCH:**  
+  - Formato: `SEARCH|TIPO|QUERY\n` (dove TIPO è TITLE o GENRE)  
+  - Esempio: `SEARCH|TITLE|Matrix\n` oppure `SEARCH|GENRE|Fantascienza\n`
+  
+- **RENT:**  
+  - Formato: `RENT|username|film_id|due_date\n`  
+  - Esempio: `RENT|Mario|2|2025-05-10\n`
+  
+- **RETURN:**  
+  - Formato: `RETURN|username|film_id\n`  
+  - Esempio: `RETURN|Mario|2\n`
+  
+- **MYRENTALS:**  
+  - Formato: `MYRENTALS|username\n`  
+  - Esempio: `MYRENTALS|Mario\n`
+
+Il server risponde con messaggi testuali che confermano l'azione (es. "Registrazione avvenuta con successo\n", "Login effettuato\n") oppure con messaggi di errore (es. "Formato comando errato ...", "Username gia' esistente!\n").
+
+## Conclusioni
+
+Questo README descrive in maniera completa come eseguire e interagire con l'intero progetto Videoteca, sia tramite Docker Compose che localmente. Il protocollo di comunicazione e tutte le istruzioni necessarie sono spiegate in dettaglio, garantendo che il sistema possa essere testato e valutato con successo.
+
+

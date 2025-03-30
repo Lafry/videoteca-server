@@ -1,0 +1,13 @@
+services:
+  server:
+    build:
+      context: ./server_folder
+      dockerfile: Dockerfile
+    container_name: video_server
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./data/users.json:/usr/src/app/users.json
+      - ./data/films.json:/usr/src/app/films.json
+
+

@@ -1,0 +1,19 @@
+progetto-videoteca/
+├── client/
+│   └── client.c         // Codice sorgente del client (locale o container, invariato)
+├── data/
+│   ├── films.json       // File JSON per i film
+│   └── users.json       // File JSON per gli utenti (inizialmente "[]")
+├── server/
+│   ├── auth.c           // Modulo per registrazione e login (aggiornato: il server ora si limita a salvare e confrontare le password già hashate dal client)
+│   ├── auth.h
+│   ├── cJSON.c          // Libreria cJSON (inclusa se non usata dal sistema)
+│   ├── cJSON.h
+│   ├── json_db.c        // Modulo per caricamento/salvataggio dei dati JSON
+│   ├── json_db.h
+│   ├── main.c           // Punto d'ingresso del server
+│   ├── rental.c         // Modulo per operazioni su film (noleggio, restituzione, ecc.)
+│   ├── rental.h
+│   ├── Makefile         // Makefile per compilare il server (nella cartella server)
+│   └── Dockerfile       // Dockerfile per containerizzare il server
+└── docker-compose.yml   // Definizione del container del server
