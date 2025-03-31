@@ -6,6 +6,7 @@
 #include <pthread.h>
 #include "json_db.h"
 #include "auth.h"
+#include "rental.h"
 
 #define PORT 8080
 #define MAX_CONN 10
@@ -30,6 +31,8 @@ void *handle_client(void *socket_desc) {
             handle_register(sock, support);
         } else if (strcmp(command, "LOGIN") == 0) {
             handle_login(sock, suppor);
+        } else if (strcmp(command, "SEARCH") == 0) {
+            handle_search(sock, saveptr);
         } else {
             send(sock, "Comando non riconosciuto\n", 26, 0);
         }
@@ -50,6 +53,7 @@ int main() {
     int addrlen = sizeof(address);
 
     load_users_data();
+    load_films_data();
     
     if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0) {
         perror("Socket fallito");
@@ -89,6 +93,7 @@ int main() {
     }
     
     cJSON_Delete(users_data);
+    cJSON_Delete(films_data);
     pthread_mutex_destroy(&data_mutex);
     return 0;
 }

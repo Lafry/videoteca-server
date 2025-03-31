@@ -1,7 +1,7 @@
 services:
   server:
     build:
-      context: ./server_folder
+      context: ./server
       dockerfile: Dockerfile
     container_name: video_server
     ports:
