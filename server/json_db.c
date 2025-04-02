@@ -1,71 +1,86 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <pthread.h>
 #include "json_db.h"
 #include "cJSON.h"
 
-const char* users_filename = "users.json";
-
 cJSON *users_data = NULL;
 cJSON *films_data = NULL;
-
 pthread_mutex_t data_mutex = PTHREAD_MUTEX_INITIALIZER;
 
-static char* load_file(const char* filename) {
-    FILE *f = fopen(filename, "rb");
-    if (!f) {
-        perror("Errore apertura file");
-        return NULL;
+void load_films_data() {
+    FILE *fp = fopen("films.json", "r");
+    if (!fp) {
+        perror("Errore apertura films.json");
+        // Inizializza un array vuoto
+        films_data = cJSON_CreateArray();
+        return;
     }
-    fseek(f, 0, SEEK_END);
-    long length = ftell(f);
-    rewind(f);
+    fseek(fp, 0, SEEK_END);
+    long length = ftell(fp);
+    rewind(fp);
     char *data = malloc(length + 1);
-    if (!data) {
-        fclose(f);
-        return NULL;
+    if (data) {
+        fread(data, 1, length, fp);
+        data[length] = '\0';
+        films_data = cJSON_Parse(data);
+        free(data);
     }
-    fread(data, 1, length, f);
-    data[length] = '\0';
-    fclose(f);
-    return data;
-}
-
-static int save_file(const char* filename, const char* data) {
-    FILE *f = fopen(filename, "wb");
-    if (!f) {
-        perror("Errore apertura file per scrittura");
-        return -1;
+    fclose(fp);
+    if (!films_data) {
+        films_data = cJSON_CreateArray();
     }
-    fwrite(data, sizeof(char), strlen(data), f);
-    fclose(f);
-    return 0;
 }
 
 void load_users_data() {
-    char *data = load_file(users_filename);
-    if (data == NULL) {
+    FILE *fp = fopen("users.json", "r");
+    if (!fp) {
+        perror("Errore apertura users.json");
+        // Inizializza un array vuoto
         users_data = cJSON_CreateArray();
-        char *printed = cJSON_Print(users_data);
-        save_file(users_filename, printed);
-        free(printed);
-        printf("Creato nuovo file JSON per gli utenti.\n");
-	fflus(stdout);
-    } else {
+        return;
+    }
+    fseek(fp, 0, SEEK_END);
+    long length = ftell(fp);
+    rewind(fp);
+    char *data = malloc(length + 1);
+    if (data) {
+        fread(data, 1, length, fp);
+        data[length] = '\0';
         users_data = cJSON_Parse(data);
-        if (!users_data) {
-            printf("Errore nel parsing di users.json. Creo nuova struttura base.\n");
-            fflush(stdout);
-	    users_data = cJSON_CreateArray();
-        }
         free(data);
+    }
+    fclose(fp);
+    if (!users_data) {
+        users_data = cJSON_CreateArray();
     }
 }
 
+void save_films_data() {
+    FILE *fp = fopen("films.json", "w");
+    if (!fp) {
+        perror("Errore apertura films.json per scrittura");
+        return;
+    }
+    char *printed = cJSON_Print(films_data);
+    if (printed) {
+        fprintf(fp, "%s", printed);
+        free(printed);
+    }
+    fclose(fp);
+}
+
 void save_users_data() {
-    pthread_mutex_lock(&data_mutex);
+    FILE *fp = fopen("users.json", "w");
+    if (!fp) {
+        perror("Errore apertura users.json per scrittura");
+        return;
+    }
     char *printed = cJSON_Print(users_data);
-    save_file(users_filename, printed);
-    free(printed);
-    pthread_mutex_unlock(&data_mutex);
+    if (printed) {
+        fprintf(fp, "%s", printed);
+        free(printed);
+    }
+    fclose(fp);
 }

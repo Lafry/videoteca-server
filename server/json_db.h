@@ -4,12 +4,10 @@
 #include <pthread.h>
 #include "cJSON.h"
 
-// Percorsi dei file JSON (i file verranno montati tramite bind mount)
-extern const char* users_filename;
-extern const char* films_filename;
-
-// Variabili globali per i dati (oggetti JSON)
+// Variabile contenente i dati del json users.json
 extern cJSON *users_data;
+
+// Variabile contenente i dati del json films.json
 extern cJSON *films_data;
 
 // Mutex per sincronizzare gli accessi a questi dati

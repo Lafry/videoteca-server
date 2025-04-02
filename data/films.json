@@ -1,72 +1,61 @@
-[
-  {
-    "film_id": 1,
-    "titolo": "Il Padrino",
-    "genere": "Drammatico",
-    "copie_totali": 5,
-    "copie_disponibili": 3
-  },
-  {
-    "film_id": 2,
-    "titolo": "Matrix",
-    "genere": "Fantascienza",
-    "copie_totali": 4,
-    "copie_disponibili": 4
-  },
-  {
-    "film_id": 3,
-    "titolo": "Inception",
-    "genere": "Fantascienza",
-    "copie_totali": 6,
-    "copie_disponibili": 5
-  },
-  {
-    "film_id": 4,
-    "titolo": "Pulp Fiction",
-    "genere": "Crimine",
-    "copie_totali": 7,
-    "copie_disponibili": 2
-  },
-  {
-    "film_id": 5,
-    "titolo": "La Vita è Bella",
-    "genere": "Drammatico",
-    "copie_totali": 3,
-    "copie_disponibili": 1
-  },
-  {
-    "film_id": 6,
-    "titolo": "Star Wars: Una Nuova Speranza",
-    "genere": "Fantascienza",
-    "copie_totali": 10,
-    "copie_disponibili": 6
-  },
-  {
-    "film_id": 7,
-    "titolo": "Forrest Gump",
-    "genere": "Drammatico",
-    "copie_totali": 8,
-    "copie_disponibili": 3
-  },
-  {
-    "film_id": 8,
-    "titolo": "Il Cavaliere Oscuro",
-    "genere": "Azione",
-    "copie_totali": 5,
-    "copie_disponibili": 4
-  },
-  {
-    "film_id": 9,
-    "titolo": "Fight Club",
-    "genere": "Thriller",
-    "copie_totali": 6,
-    "copie_disponibili": 5
-  },
-  {
-    "film_id": 10,
-    "titolo": "Avatar",
-    "genere": "Fantascienza",
-    "copie_totali": 7,
-    "copie_disponibili": 7
-  }
-]
+[{
+		"film_id":	1,
+		"titolo":	"Il Padrino",
+		"genere":	"Drammatico",
+		"copie_totali":	5,
+		"copie_disponibili":	3
+	}, {
+		"film_id":	2,
+		"titolo":	"Matrix",
+		"genere":	"Fantascienza",
+		"copie_totali":	4,
+		"copie_disponibili":	2
+	}, {
+		"film_id":	3,
+		"titolo":	"Inception",
+		"genere":	"Fantascienza",
+		"copie_totali":	6,
+		"copie_disponibili":	5
+	}, {
+		"film_id":	4,
+		"titolo":	"Pulp Fiction",
+		"genere":	"Crimine",
+		"copie_totali":	7,
+		"copie_disponibili":	2
+	}, {
+		"film_id":	5,
+		"titolo":	"La Vita è Bella",
+		"genere":	"Drammatico",
+		"copie_totali":	3,
+		"copie_disponibili":	1
+	}, {
+		"film_id":	6,
+		"titolo":	"Star Wars: Una Nuova Speranza",
+		"genere":	"Fantascienza",
+		"copie_totali":	10,
+		"copie_disponibili":	6
+	}, {
+		"film_id":	7,
+		"titolo":	"Forrest Gump",
+		"genere":	"Drammatico",
+		"copie_totali":	8,
+		"copie_disponibili":	3
+	}, {
+		"film_id":	8,
+		"titolo":	"Il Cavaliere Oscuro",
+		"genere":	"Azione",
+		"copie_totali":	5,
+		"copie_disponibili":	4
+	}, {
+		"film_id":	9,
+		"titolo":	"Fight Club",
+		"genere":	"Thriller",
+		"copie_totali":	6,
+		"copie_disponibili":	5
+	}, {
+		"film_id":	10,
+		"titolo":	"Avatar",
+		"genere":	"Fantascienza",
+		"copie_totali":	7,
+		"copie_disponibili":	7
+	}]
