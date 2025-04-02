@@ -52,6 +52,7 @@ int main() {
     struct sockaddr_in address;
     int addrlen = sizeof(address);
 
+    setbuf(stdout, NULL);
     load_users_data();
     load_films_data();
     
@@ -77,14 +78,14 @@ int main() {
     printf("Server in ascolto sulla porta %d...\n", PORT);
     
     while ((new_socket = accept(server_fd, (struct sockaddr *)&address, (socklen_t *)&addrlen))) {
-        pthread_t sniffer_thread;
+        pthread_t thread;
         new_sock = malloc(sizeof(int));
         *new_sock = new_socket;
-        if (pthread_create(&sniffer_thread, NULL, handle_client, (void *)new_sock) < 0) {
+        if (pthread_create(&thread, NULL, handle_client, (void *)new_sock) < 0) {
             perror("Impossibile creare thread");
             exit(EXIT_FAILURE);
         }
-        pthread_detach(sniffer_thread);
+        pthread_detach(thread);
     }
     
     if (new_socket < 0) {
