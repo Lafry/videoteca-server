@@ -9,7 +9,7 @@
 		"titolo":	"Matrix",
 		"genere":	"Fantascienza",
 		"copie_totali":	4,
-		"copie_disponibili":	2
+		"copie_disponibili":	3
 	}, {
 		"film_id":	3,
 		"titolo":	"Inception",
@@ -58,4 +58,10 @@
 		"genere":	"Fantascienza",
 		"copie_totali":	7,
 		"copie_disponibili":	7
+	}, {
+		"film_id":	11,
+		"titolo":	"Pap-Music - Animation for Fashion",
+		"genere":	"Animazione",
+		"copie_totali":	12,
+		"copie_disponibili":	11
 	}]

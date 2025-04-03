@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <time.h>
+//#include <time.h>
 #include <pthread.h>
 #include <sys/socket.h>
 #include "rental.h"
@@ -108,7 +108,8 @@ void handle_rent(int sock, char *params) {
             int num_loans = prestiti_user ? cJSON_GetArraySize(prestiti_user) : 0;
             if (num_loans >= MAX_LOANS_PER_USER) {
                 pthread_mutex_unlock(&data_mutex);
-                send(sock, "Numero massimo di film noleggiati raggiunto\n##END##", 50, 0);
+                const char *msg = "Numero massimo di film noleggiati raggiunto\n##END##";
+                send(sock, msg, strlen(msg), 0);
                 return;
             }
             if (!prestiti_user) {
@@ -118,8 +119,6 @@ void handle_rent(int sock, char *params) {
             cJSON *new_prestito = cJSON_CreateObject();
             cJSON_AddNumberToObject(new_prestito, "film_id", film_id);
             cJSON_AddStringToObject(new_prestito, "return_date", return_date);
-            time_t now = time(NULL);
-            cJSON_AddNumberToObject(new_prestito, "timestamp", (double)now);
             cJSON_AddItemToArray(prestiti_user, new_prestito);
             break;
         }
@@ -139,7 +138,8 @@ void handle_return(int sock, char *params) {
     char *username = strtok_r(params, "|\n", &support);
     char *film_id_str = strtok_r(NULL, "|\n", &support);
     if (!username || !film_id_str) {
-        send(sock, "Formato comando errato (RETURN|username|film_id)\n##END##", 52, 0);
+        const char *msg = "Formato comando errato (RETURN|username|film_id)\n##END##";
+        send(sock, msg, strlen(msg), 0);
         return;
     }
     int film_id = atoi(film_id_str);
@@ -164,7 +164,8 @@ void handle_return(int sock, char *params) {
     pthread_mutex_unlock(&data_mutex);
     
     if (!found) {
-        send(sock, "Film non trovato\n##END##", 25, 0);
+        const char *msg = "Film non trovato\n##END##";
+        send(sock, msg, strlen(msg), 0);
         return;
     }
     
@@ -198,15 +199,17 @@ void handle_return(int sock, char *params) {
     
     save_films_data();
     save_users_data();
-    
-    send(sock, "Film restituito con successo\n##END##", 38, 0);
+    const char *msg = "Film restituito con successo\n##END##";
+    send(sock, msg, strlen(msg), 0);
+
 }
 
 void handle_my_rentals(int sock, char *params) {
     char *support;
     char *username = strtok_r(params, "|\n", &support);
     if (!username) {
-        send(sock, "Formato comando errato (MYRENTALS|username)\n##END##", 50, 0);
+        const char *msg = "Formato comando errato (MYRENTALS|username)\n##END##";
+        send(sock, msg, strlen(msg), 0);
         return;
     }
     char reply[2048] = "Film noleggiati:\n";
@@ -224,11 +227,24 @@ void handle_my_rentals(int sock, char *params) {
                     cJSON *film_id_item = cJSON_GetObjectItem(prestito, "film_id");
                     cJSON *return_date_item = cJSON_GetObjectItem(prestito, "return_date");
                     if (film_id_item && return_date_item) {
+                        int film_id = film_id_item->valueint;
+                        char film_title[100] = "N/D";
+                        // Cerca nella lista dei film per ottenere il titolo corrispondente all'ID.
+                        int num_films = cJSON_GetArraySize(films_data);
+                        for (int k = 0; k < num_films; k++) {
+                            cJSON *film = cJSON_GetArrayItem(films_data, k);
+                            cJSON *id_field = cJSON_GetObjectItem(film, "film_id");
+                            if (id_field && id_field->valueint == film_id) {
+                                cJSON *titolo_item = cJSON_GetObjectItem(film, "titolo");
+                                if (titolo_item)
+                                    strncpy(film_title, titolo_item->valuestring, sizeof(film_title) - 1);
+                                break;
+                            }
+                        }
                         char film_info[256];
                         snprintf(film_info, sizeof(film_info),
-                                 "Film ID: %d, Restituire entro: %s\n",
-                                 film_id_item->valueint,
-                                 return_date_item->valuestring);
+                                 "Film ID: %d, Titolo: %s, da restituire entro: %s\n",
+                                 film_id, film_title, return_date_item->valuestring);
                         strcat(reply, film_info);
                     }
                 }
