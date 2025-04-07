@@ -18,24 +18,26 @@ Il progetto integra anche:
 La struttura tipica del repository è la seguente:
 
 progetto-videoteca/
-├── client/
-│   ├── client.c
-│   └── Makefile         # Compilazione del client (usa OpenSSL: -lssl -lcrypto)
 ├── data/
-│   └── films.json       # File JSON con dati dei film e altri dati (es. utenti, se previsto)
-├── server/                # Contiene l'applicazione server scritta in C
+│   ├── users.json       # File JSON con dati degli utenti
+│   └── films.json       # File JSON con dati dei film
+├── server/              # Contiene l'applicazione server scritta in C
+|   ├── auth/ 
+|   │   ├── auth.c       # Gestione operazioni di registrazione e login
+|   │   └── auth.h
+|   ├── json_db/ 
+|   │   ├── json_db.c    # Gestione della base dati (lettura/scrittura dei file JSON)
+|   │   └── json_db.h
+|   ├── rental/ 
+|   │   ├── rental.c     # Gestione delle operazioni di noleggio, restituzione, ricerca
+|   │   └── rental.h
+|   ├── cJSON/ 
+|   │   ├── cJSON.c      # Libreria cJSON per gestire i file JSON
+|   │   └── cJSON.h
 │   ├── main.c           # Punto d'ingresso del server
-│   ├── auth.c           # Gestione operazioni di registrazione e login
-│   ├── auth.h
-│   ├── rental.c         # Gestione delle operazioni di noleggio, restituzione, ricerca
-│   ├── rental.h
-│   ├── json_db.c        # Gestione della base dati (lettura/scrittura dei file JSON)
-│   ├── json_db.h
-│   ├── cJSON.c          # Libreria cJSON per gestire i file JSON
-│   ├── cJSON.h
 │   ├── Dockerfile       # Per creare l'immagine del server
 │   └── Makefile         # Build del server (usa: `-D_XOPEN_SOURCE` per strptime, ecc.)
-├── docker-compose.yml   # (opzionale) per la gestione multi-container
+├── docker-compose.yml   # per la gestione multi-container
 └── README.md            # Questo file
 
 ---
