@@ -1,6 +1,6 @@
 # Progetto Videoteca
 
-Il Progetto Videoteca è un'applicazione client-server per la gestione di un sistema di noleggio video (videoteca). Il progetto è stato sviluppato in C ed è strutturato in vari moduli:
+Il Progetto Videoteca è un'applicazione client-server per la gestione di un sistema di noleggio video. Il progetto è stato sviluppato in C ed è strutturato in vari moduli:
 
 - **Server**: gestisce le richieste dei client, le operazioni di registrazione, login, ricerca film, noleggio e restituzione.  
 - **Client**: un'applicazione console che permette agli utenti di interagire con il server (registrazione, login, ricerca, noleggio, restituzione).
@@ -9,7 +9,7 @@ Il Progetto Videoteca è un'applicazione client-server per la gestione di un sis
 Il progetto integra anche:
 - **cJSON** per la gestione dei dati in formato JSON.
 - **OpenSSL** per calcolare l'hash SHA256 (sul client, per proteggere le password).
-- **Docker** (e Docker Compose, se usato) per creare ed eseguire il container del server.
+- **Docker/Docker compose** per creare ed eseguire il container del server.
 
 ---
 
