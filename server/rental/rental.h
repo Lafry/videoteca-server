@@ -2,7 +2,7 @@
 #define RENTAL_H
 
 // Numero massimo di titoli che un utente può avere noleggiati contemporaneamente
-#define MAX_LOANS_PER_USER 5
+#define MAX_LOANS_PER_USER 10
 
 // Se la data di restituzione è entro WARNING_DAYS giorni dalla data odierna, invia un avviso
 #define WARNING_DAYS 7
