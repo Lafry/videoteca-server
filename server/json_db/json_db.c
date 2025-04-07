@@ -3,7 +3,7 @@
 #include <string.h>
 #include <pthread.h>
 #include "json_db.h"
-#include "cJSON.h"
+#include "../cJSON/cJSON.h"
 
 cJSON *users_data = NULL;
 cJSON *films_data = NULL;

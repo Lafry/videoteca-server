@@ -4,7 +4,7 @@ CC = gcc
 CFLAGS = -Wall -pthread -D_XOPEN_SOURCE
 LIBS = -lm
 
-SRC = main.c json_db.c auth.c rental.c cJSON.c
+SRC = main.c json_db/json_db.c auth/auth.c rental/rental.c cJSON/cJSON.c
 TARGET = server
 
 all: $(TARGET)

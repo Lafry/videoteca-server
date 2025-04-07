@@ -1,13 +1,34 @@
+#services:
+#  server:
+#    build:
+#      context: ./server
+#      dockerfile: Dockerfile
+#    container_name: video_server
+#    ports:
+#      - "8080:8080"
+#    volumes:
+#      - ./data/users.json:/usr/src/app/users.json
+#      - ./data/films.json:/usr/src/app/films.json
+
+
 services:
   server:
     build:
       context: ./server
       dockerfile: Dockerfile
-    container_name: video_server
+    container_name: videoteca_server
     ports:
       - "8080:8080"
     volumes:
       - ./data/users.json:/usr/src/app/users.json
       - ./data/films.json:/usr/src/app/films.json
+    networks:
+      videoteca_net:
+        aliases:
+          - server
+
+networks:
+  videoteca_net:
+    external: true
 
 

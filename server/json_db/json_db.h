@@ -2,7 +2,7 @@
 #define JSON_DB_H
 
 #include <pthread.h>
-#include "cJSON.h"
+#include "../cJSON/cJSON.h"
 
 // Variabile contenente i dati del json users.json
 extern cJSON *users_data;

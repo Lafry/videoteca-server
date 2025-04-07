@@ -4,9 +4,9 @@
 #include <unistd.h>
 #include <arpa/inet.h>
 #include <pthread.h>
-#include "json_db.h"
-#include "auth.h"
-#include "rental.h"
+#include "json_db/json_db.h"
+#include "auth/auth.h"
+#include "rental/rental.h"
 
 #define PORT 8080
 #define MAX_CONN 10

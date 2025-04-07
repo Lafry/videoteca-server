@@ -1,12 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-//#include <time.h>
 #include <pthread.h>
 #include <sys/socket.h>
 #include "rental.h"
-#include "json_db.h"
-#include "cJSON.h"
+#include "../json_db/json_db.h"
+#include "../cJSON/cJSON.h"
 
 extern pthread_mutex_t data_mutex;
 

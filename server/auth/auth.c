@@ -5,9 +5,9 @@
 #include <sys/socket.h>
 #include <time.h>
 #include "auth.h"
-#include "json_db.h"
-#include "cJSON.h"
-#include "rental.h"
+#include "../json_db/json_db.h"
+#include "../cJSON/cJSON.h"
+#include "../rental/rental.h"
 
 extern pthread_mutex_t data_mutex;
 

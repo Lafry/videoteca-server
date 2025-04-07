@@ -5,4 +5,17 @@
 				"film_id":	11,
 				"return_date":	"2025-04-06"
 			}]
+	}, {
+		"username":	"Pippo",
+		"password":	"a2242ead55c94c3deb7cf2340bfef9d5bcaca22dfe66e646745ee4371c633fc8",
+		"prestiti":	[{
+				"film_id":	5,
+				"return_date":	"2025-04-13"
+			}, {
+				"film_id":	3,
+				"return_date":	"2026-05-14"
+			}, {
+				"film_id":	10,
+				"return_date":	"2025-12-12"
+			}]
 	}]
