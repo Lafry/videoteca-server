@@ -9,6 +9,25 @@
 
 extern pthread_mutex_t data_mutex;
 
+static int compare_rating(const void *a, const void *b) {
+    cJSON *filmA = *(cJSON **)a;
+    cJSON *filmB = *(cJSON **)b;
+    
+    cJSON *ratingA = cJSON_GetObjectItem(filmA, "rating");
+    cJSON *ratingB = cJSON_GetObjectItem(filmB, "rating");
+    
+    int rA = (ratingA && ratingA->type == cJSON_Number) ? ratingA->valueint : 0;
+    int rB = (ratingB && ratingB->type == cJSON_Number) ? ratingB->valueint : 0;
+    
+    if (rA < rB)
+        return 1;
+    else if (rA > rB)
+        return -1;
+    else
+        return 0;
+}
+
+
 void handle_search(int sock, char *params) {
     char *support;
     char *type = strtok_r(params, "|\n", &support);
@@ -20,38 +39,103 @@ void handle_search(int sock, char *params) {
     }
 
     char reply[2048] = "Risultati ricerca:\n";
+    
+    // Caso: ricerca per film POPULAR (film più votati)
+    if (strcmp(type, "POPULAR") == 0) {
+    // Converti il parametro query in intero: il numero di film da mostrare
+      int n = atoi(query);
+      if (n <= 0) {
+          n = 5;
+    }
+    
     pthread_mutex_lock(&data_mutex);
-    int n_films = cJSON_GetArraySize(films_data);
-
-    for (int i = 0; i < n_films; i++) {
-        cJSON *film = cJSON_GetArrayItem(films_data, i);
-        cJSON *field = NULL;
-        if (strcmp(type, "TITLE") == 0)
-            field = cJSON_GetObjectItem(film, "titolo");
-        else if (strcmp(type, "GENRE") == 0)
-            field = cJSON_GetObjectItem(film, "genere");
-        
-        if (field && strstr(field->valuestring, query) != NULL) {
-            char film_info[256];
-            int film_id = 0;
-            cJSON *id_field = cJSON_GetObjectItem(film, "film_id");
-            if (id_field)
-                film_id = id_field->valueint;
-            cJSON *titolo = cJSON_GetObjectItem(film, "titolo");
-            cJSON *genere = cJSON_GetObjectItem(film, "genere");
-            cJSON *copies = cJSON_GetObjectItem(film, "copie_disponibili");
-            snprintf(film_info, sizeof(film_info),
-                     "Film ID: %d, Titolo: %s, Genere: %s, Disponibili: %d\n",
-                     film_id,
-                     titolo ? titolo->valuestring : "N/A",
-                     genere ? genere->valuestring : "N/A",
-                     copies ? copies->valueint : 0);
-            strcat(reply, film_info);
-        }
+    int total_films = cJSON_GetArraySize(films_data);
+    cJSON **films_array = malloc(total_films * sizeof(cJSON *));
+    if (!films_array) {
+        pthread_mutex_unlock(&data_mutex);
+        const char *msg = "Errore di allocazione memoria\n##END##";
+        send(sock, msg, strlen(msg), 0);
+        return;
+    }
+    for (int i = 0; i < total_films; i++) {
+        films_array[i] = cJSON_GetArrayItem(films_data, i);
     }
     pthread_mutex_unlock(&data_mutex);
+    
+    // Ordina in ordine decrescente in base al campo "rating" (intero)
+    qsort(films_array, total_films, sizeof(cJSON *), compare_rating);
+    
+    int count = (total_films < n) ? total_films : n;
+    for (int i = 0; i < count; i++) {
+        cJSON *film = films_array[i];
+        int film_id = 0;
+        cJSON *id_field = cJSON_GetObjectItem(film, "film_id");
+        if (id_field)
+            film_id = id_field->valueint;
+            
+        cJSON *titolo = cJSON_GetObjectItem(film, "titolo");
+        cJSON *genere = cJSON_GetObjectItem(film, "genere");
+        cJSON *copies = cJSON_GetObjectItem(film, "copie_disponibili");
+        
+        // Ottieni il rating come intero
+        cJSON *rating_item = cJSON_GetObjectItem(film, "rating");
+        int rating = (rating_item && rating_item->type == cJSON_Number) ? rating_item->valueint : 0;
+        
+        char film_info[256];
+        snprintf(film_info, sizeof(film_info),
+                 "Film ID: %d, Titolo: %s, Genere: %s, Disponibili: %d, Rating: %d\n",
+                 film_id,
+                 titolo ? titolo->valuestring : "N/A",
+                 genere ? genere->valuestring : "N/A",
+                 copies ? copies->valueint : 0,
+                 rating);
+        strncat(reply, film_info, sizeof(reply) - strlen(reply) - 1);
+    }
+    free(films_array);
     strcat(reply, "##END##");
     send(sock, reply, strlen(reply), 0);
+  }  else if (strcmp(type, "TITLE") == 0 || strcmp(type, "GENRE") == 0) {
+    
+      pthread_mutex_lock(&data_mutex);
+      int n_films = cJSON_GetArraySize(films_data);
+
+      for (int i = 0; i < n_films; i++) {
+          cJSON *film = cJSON_GetArrayItem(films_data, i);
+          cJSON *field = NULL;
+          if (strcmp(type, "TITLE") == 0)
+              field = cJSON_GetObjectItem(film, "titolo");
+          else if (strcmp(type, "GENRE") == 0)
+              field = cJSON_GetObjectItem(film, "genere");
+          
+          if (field && strstr(field->valuestring, query) != NULL) {
+              char film_info[256];
+              int film_id = 0;
+              cJSON *id_field = cJSON_GetObjectItem(film, "film_id");
+              if (id_field)
+                  film_id = id_field->valueint;
+              cJSON *titolo = cJSON_GetObjectItem(film, "titolo");
+              cJSON *genere = cJSON_GetObjectItem(film, "genere");
+              cJSON *copies = cJSON_GetObjectItem(film, "copie_disponibili");
+              cJSON *rating_item = cJSON_GetObjectItem(film, "rating");
+              int rating = (rating_item && rating_item->type == cJSON_Number) ? rating_item->valueint : 0;
+
+              snprintf(film_info, sizeof(film_info),
+                       "Film ID: %d, Titolo: %s, Genere: %s, Disponibili: %d, Rating: %d\n",
+                       film_id,
+                       titolo ? titolo->valuestring : "N/A",
+                       genere ? genere->valuestring : "N/A",
+                       copies ? copies->valueint : 0,
+                       rating);
+              strcat(reply, film_info);
+          }
+      }
+      pthread_mutex_unlock(&data_mutex);
+      strcat(reply, "##END##");
+      send(sock, reply, strlen(reply), 0);
+      } else {
+        const char *msg = "Tipo di ricerca non supportato\n##END##";
+        send(sock, msg, strlen(msg), 0);
+      }
 }
 
 void handle_rent(int sock, char *params) {

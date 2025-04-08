@@ -3,7 +3,7 @@
 
 // Numero massimo di titoli che un utente può avere noleggiati contemporaneamente
 #define MAX_LOANS_PER_USER 10
-
+#define DEFAULT_MAX_POPULAR_SIZE_LIST 5
 // Se la data di restituzione è entro WARNING_DAYS giorni dalla data odierna, invia un avviso
 #define WARNING_DAYS 7
 
