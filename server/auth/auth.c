@@ -9,8 +9,6 @@
 #include "../cJSON/cJSON.h"
 #include "../rental/rental.h"
 
-extern pthread_mutex_t data_mutex;
-
 void handle_register(int sock, char *params) {
     // Parametri attesi: "username|password"
     char *support;
@@ -98,7 +96,8 @@ void handle_login(int sock, char *params) {
                         if (strptime(return_date_item->valuestring, "%Y-%m-%d", &return_tm) != NULL) {
                             time_t return_time = mktime(&return_tm);
                             double diff = difftime(return_time, now);
-                            if (diff <= (WARNING_DAYS * 24 * 3600)) {
+                            
+                            if (diff >= 0 && diff <= (WARNING_DAYS * 24 * 3600)) {
                                 // Recupera il titolo del film cercando in films_data
                                 int film_id = film_id_item->valueint;
                                 char film_title[100] = "Sconosciuto";
@@ -121,6 +120,30 @@ void handle_login(int sock, char *params) {
                                          "Attenzione: il film '%s' deve essere restituito entro %s\n",
                                          film_title, return_date_item->valuestring);
                                 strncat(message, warning, sizeof(message) - strlen(message) - 1);
+                            } else if (diff < 0) {
+                                int film_id = film_id_item->valueint;
+                                char film_title[100] = "Sconosciuto";
+                                pthread_mutex_lock(&data_mutex);
+                                int num_films = cJSON_GetArraySize(films_data);
+                                for (int j = 0; j < num_films; j++) {
+                                    cJSON *film = cJSON_GetArrayItem(films_data, j);
+                                    cJSON *id_field = cJSON_GetObjectItem(film, "film_id");
+                                    if (id_field && id_field->valueint == film_id) {
+                                        cJSON *titolo = cJSON_GetObjectItem(film, "titolo");
+                                        if (titolo && titolo->type == cJSON_String) {
+                                            strncpy(film_title, titolo->valuestring, sizeof(film_title)-1);
+                                            film_title[sizeof(film_title)-1] = '\0';
+                                        }
+                                        break;
+                                    }
+                                }
+                                pthread_mutex_unlock(&data_mutex);
+                                
+                                char warning[256];
+                                snprintf(warning, sizeof(warning),
+                                         "Attenzione: limite massimo per il noleggio del film '%s' è scaduto il %s, restituire il film quanto prima!\n",
+                                         film_title, return_date_item->valuestring);
+                                strncat(message, warning, sizeof(message)-strlen(message)-1);
                             }
                         }
                     }
