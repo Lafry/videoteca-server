@@ -226,9 +226,46 @@ void handle_return(int sock, char *params) {
         return;
     }
     int film_id = atoi(film_id_str);
-    int found = 0;
+        // Variabili per memorizzare l'utente e l'indice del prestito da eliminare
+    cJSON *user_found = NULL;
+    cJSON *prestiti_user = NULL;
+    int index_to_delete = -1;
+    int prestito_found = 0;
+    
+        // Scansiona users_data per individuare l'utente e verificare se il film è presente nei prestiti
+    pthread_mutex_lock(&data_mutex);
+    int user_array_size = cJSON_GetArraySize(users_data);
+    for (int i = 0; i < user_array_size; i++) {
+        cJSON *user = cJSON_GetArrayItem(users_data, i);
+        cJSON *user_name = cJSON_GetObjectItem(user, "username");
+        if (user_name && strcmp(user_name->valuestring, username) == 0) {
+            user_found = user;
+            prestiti_user = cJSON_GetObjectItem(user, "prestiti");
+            if (prestiti_user) {
+                int num_prestiti = cJSON_GetArraySize(prestiti_user);
+                for (int j = 0; j < num_prestiti; j++) {
+                    cJSON *prestito = cJSON_GetArrayItem(prestiti_user, j);
+                    cJSON *film_field = cJSON_GetObjectItem(prestito, "film_id");
+                    if (film_field && film_field->valueint == film_id) {
+                        index_to_delete = j;
+                        prestito_found = 1;
+                        break;
+                    }
+                }
+            }
+            break;
+        }
+    }
+    pthread_mutex_unlock(&data_mutex);
+    
+    if (!prestito_found) {
+      const char *msg = "Film non trovato nell'elenco dei film noleggiati\n##END##";
+      send(sock, msg, strlen(msg), 0);
+      return;
+    }
     
     // Incrementa le copie disponibili per il film restituito
+    int found_in_films = 0;
     pthread_mutex_lock(&data_mutex);
     int num_films = cJSON_GetArraySize(films_data);
     for (int i = 0; i < num_films; i++) {
@@ -240,42 +277,24 @@ void handle_return(int sock, char *params) {
                 int current = copies_field->valueint;
                 cJSON_SetIntValue(copies_field, current + 1);
             }
-            found = 1;
+            found_in_films = 1;
             break;
         }
     }
     pthread_mutex_unlock(&data_mutex);
     
-    if (!found) {
-        const char *msg = "Film non trovato\n##END##";
+    if (!found_in_films) {
+        const char *msg = "Film non trovato nel catalogo\n##END##";
         send(sock, msg, strlen(msg), 0);
         return;
     }
     
     // Rimuove il prestito dal record dell'utente
     pthread_mutex_lock(&data_mutex);
-    int user_array_size = cJSON_GetArraySize(users_data);
-    for (int i = 0; i < user_array_size; i++) {
-        cJSON *user = cJSON_GetArrayItem(users_data, i);
-        cJSON *user_name = cJSON_GetObjectItem(user, "username");
-        if (user_name && strcmp(user_name->valuestring, username) == 0) {
-            cJSON *prestiti_user = cJSON_GetObjectItem(user, "prestiti");
-            if (prestiti_user) {
-                int num_prestiti = cJSON_GetArraySize(prestiti_user);
-                int index_to_delete = -1;
-                for (int j = 0; j < num_prestiti; j++) {
-                    cJSON *prestito = cJSON_GetArrayItem(prestiti_user, j);
-                    cJSON *film_field = cJSON_GetObjectItem(prestito, "film_id");
-                    if (film_field && film_field->valueint == film_id) {
-                        index_to_delete = j;
-                        break;
-                    }
-                }
-                if (index_to_delete != -1) {
-                    cJSON_DeleteItemFromArray(prestiti_user, index_to_delete);
-                }
-            }
-            break;
+    if (prestiti_user) {
+        int num_prestiti = cJSON_GetArraySize(prestiti_user);
+        if (index_to_delete >= 0 && index_to_delete < num_prestiti) {
+            cJSON_DeleteItemFromArray(prestiti_user, index_to_delete);
         }
     }
     pthread_mutex_unlock(&data_mutex);
